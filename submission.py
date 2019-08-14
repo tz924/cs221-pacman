@@ -380,7 +380,6 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
                 return s.getScore(), Directions.STOP
 
             P_uniform = 1. / len(legalActions)
-
             if agentIndex == pacmanIndex:  # Pacman
                 # pacman (a_0) => argmax Succ(s, a), d
                 return max([(Vminimax(s.generateSuccessor(agentIndex, action),
@@ -389,14 +388,14 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
                 # [1] since we return s, a pairs [1] => a
             elif agentIndex < maxPlayerIndex:  # Ghost 1 to n-1
                 # ghost (a_1 to a_n-1) => E[a] Succ(s, a), d
-                return random.choice([(P_uniform * Vminimax(s.generateSuccessor(
+                action = random.choice(legalActions)
+                return (P_uniform * Vminimax(s.generateSuccessor(
                     agentIndex, action), d, agentIndex + 1)[0], action)
-                                      for action in legalActions])
             elif agentIndex == maxPlayerIndex:  # Ghost n
                 # ghost (a_n) => E[a] Succ(s, a), d - 1
-                return random.choice([(P_uniform * Vminimax(s.generateSuccessor(
+                action = random.choice(legalActions)
+                return (P_uniform * Vminimax(s.generateSuccessor(
                     agentIndex, action), d - 1, pacmanIndex)[0], action)
-                                      for action in legalActions])
 
         return Vminimax(gameState, self.depth, self.index)[1]
         # END_YOUR_CODE
@@ -425,11 +424,11 @@ def betterEvaluationFunction(currentGameState):
     currentScore = currentGameState.getScore()
     values['score'] = currentScore
 
+    position = currentGameState.getPacmanPosition()
     currentFood = currentGameState.getFood().asList()
     n, m = len(currentFood), len(currentFood[0])
     foodsLeft = [(i, j) for i in range(n) for j in range(m)
                  if currentFood[i][j]]
-    position = currentGameState.getPacmanPosition()
 
     # Distance to Closest Food
     distClosestFood = min(manhattanDistance(position, fp) for fp in
@@ -462,18 +461,18 @@ def betterEvaluationFunction(currentGameState):
                              for cp in capsulesLeft) if capsulesLeft else 0
     values['distCap'] = distClosestCapsule
 
-    # walls = currentGameState.getWalls()
-    # distWall = min(manhattanDistance(position, wp)
-    #                for wp in walls)
-    # values['distWall'] = distWall
+    walls = currentGameState.getWalls()
+    distWall = min(manhattanDistance(position, wp)
+                   for wp in walls)
+    values['distWall'] = distWall
 
     weights['score'] = 1
     weights['distFood'] = -0.2
     weights['nFood'] = -4
-    weights['distScared'] = 2
+    weights['distScared'] = -2
     weights['distGhost'] = -0.5
     weights['nCap'] = -15
-    weights['distCap'] = 0
+    weights['distCap'] = -2
     # weights['distWall'] = 0
     return values * weights
     # END_YOUR_CODE
