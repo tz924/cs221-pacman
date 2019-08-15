@@ -443,12 +443,17 @@ def betterEvaluationFunction(currentGameState):
     ghostStates = currentGameState.getGhostStates()
     scared, ghosts = [], []
     for ghost in ghostStates:
-        if ghost.scaredTimer > 0:
+        if ghost.scaredTimer > 1:
             scared += [ghost]
         else:
             ghosts += [ghost]
-    values['distScared'] = min(manhattanDistance(position, gp.getPosition())
-                               for gp in scared) if scared else 0
+
+    # Closer the better
+    values['distScared'] = 1. / min(manhattanDistance(position,
+                                                      gp.getPosition())
+                                    for gp in scared) if scared else 0
+
+    # MAX because no ghost = I do whatever I want
     values['distGhost'] = min(manhattanDistance(position, gp.getPosition())
                               for gp in ghosts) if ghosts else MIN_UTILITY
 
@@ -466,14 +471,14 @@ def betterEvaluationFunction(currentGameState):
                    for wp in walls)
     values['distWall'] = distWall
 
-    weights['score'] = 1
-    weights['distFood'] = -0.2
-    weights['nFood'] = -4
-    weights['distScared'] = -2
-    weights['distGhost'] = -0.5
-    weights['nCap'] = -15
-    weights['distCap'] = -2
-    # weights['distWall'] = 0
+    weights['score'] = 2.4
+    weights['distFood'] = -1.7
+    weights['nFood'] = -2.2
+    weights['distScared'] = 15
+    weights['distGhost'] = -2
+    weights['nCap'] = 0.5
+    weights['distCap'] = 2.5
+    weights['distWall'] = 1.2
     return values * weights
     # END_YOUR_CODE
 
